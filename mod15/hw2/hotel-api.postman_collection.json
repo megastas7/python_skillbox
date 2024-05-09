@@ -1,0 +1,416 @@
+{
+	"info": {
+		"_postman_id": "2f978ce7-2899-4abc-bacc-ccec2c6eef15",
+		"name": "hotel-api",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "33611529"
+	},
+	"item": [
+		{
+			"name": "room",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Body matches string\", function() {",
+							"    pm.expect(pm.response.text()).to.include(\"roomId\")",
+							"});",
+							"",
+							"pm.test(\"Response schema should match\", function () {",
+							"    const schema ={",
+							"        \"properties\": {",
+							"            \"rooms\": {",
+							"                \"items\": {",
+							"                     \"$id\": \"#/properties/rooms/items\",",
+							"                     \"anyOf\": [",
+							"                         {",
+							"                             \"type\": \"object\",",
+							"                             \"required\": [",
+							"                                 \"roomId\",",
+							"                                 \"floor\",",
+							"                                 \"guestNum\",",
+							"                                 \"beds\",",
+							"                                 \"price\"",
+							"                             ],",
+							"                             \"properties\": {",
+							"                                 \"roomId\": {",
+							"                                     \"type\": \"integer\"",
+							"                                 },",
+							"                                 \"floor\": {",
+							"                                     \"type\": \"integer\"",
+							"                                 },",
+							"                                 \"guestNum\": {",
+							"                                     \"type\": \"integer\"",
+							"                                 },",
+							"                                 \"beds\": {",
+							"                                     \"type\": \"integer\"",
+							"                                 },",
+							"                                 \"price\": {",
+							"                                     \"type\": \"integer\"",
+							"                                 }",
+							"                             }",
+							"                         }",
+							"                     ]",
+							"                 }",
+							"             }",
+							"         }",
+							"     }",
+							"    pm.expect(tv4.validate(pm.response.json(), schema)).to.be.true;",
+							"});",
+							"",
+							"const rooms = pm.response.json().rooms;",
+							"pm.environment.set(\"roomId\", rooms[rooms.length - 1].roomId);",
+							"pm.environment.set('roomRequest', pm.request)",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{url}}/room?checkIn={{checkInDate}}&checkOut={{checkOutDate}}&guestsNum=1",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"room"
+					],
+					"query": [
+						{
+							"key": "checkIn",
+							"value": "{{checkInDate}}"
+						},
+						{
+							"key": "checkOut",
+							"value": "{{checkOutDate}}"
+						},
+						{
+							"key": "guestsNum",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add-room",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201.\", () => {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.sendRequest(pm.variables.get(\"url\") + '/room', (err, res) => {",
+							"    let totalRooms = res.json().rooms.length;",
+							"    pm.test(\"Request should add new room to the service.\", () => {",
+							"        pm.expect(totalRooms).to.be.eql(pm.environment.get(\"totalRoomsBeforeRequest\") + 1)",
+							"    });",
+							"})",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.sendRequest(pm.variables.get(\"url\") + '/room', (err, res) => {",
+							"    let totalRooms = res.json().rooms.length;",
+							"    pm.environment.set('totalRoomsBeforeRequest', totalRooms);",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"floor\":2,\n    \"beds\":1,\n    \"guestNum\":1,\n    \"price\":1001\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/add-room",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"add-room"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete-room",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/room?id=1",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"room"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "update-room",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"floor\":2,\r\n    \"beds\":1,\r\n    \"guestNum\":1,\r\n    \"price\":1001\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/add-room",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"add-room"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "booking",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/booking?id=1&roomId=1",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"booking"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "1"
+						},
+						{
+							"key": "roomId",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "bookng-add",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"",
+							"",
+							"pm.sendRequest(pm.variables.get(\"url\") + '/room', function (err, res) {",
+							"    pm.test(\"Room resource is still accesible\", () => {",
+							"        pm.expect(res.code).to.be.eq(200)",
+							"    })",
+							"",
+							"    const responseBody = res.json();",
+							"",
+							"    const isRoomFree = responseBody.rooms.filter((room) => {",
+							"        room.roodId == pm.environment.get('roomId');",
+							"    }).lenght == 0;",
+							"    ",
+							"    pm.test(\"Booked room is not accessible anymore\", () => {",
+							"        pm.expect(isRoomFree).to.be.false;",
+							"    })",
+							"});",
+							"",
+							"",
+							"pm.sendRequest(pm.request, (err, res) => {",
+							"    pm.test(\"Can't book same room twice\", () => {",
+							"        pm.expect(res.code).to.be.eq(409); // CONFLICT",
+							"    });",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"bookingDates\": {\n    \"checkIn\": {{checkInDate}},\n    \"checkOut\": {{checkOutDate}}\n  },\n  \"firstName\": \"nastya\",\n  \"lastName\": \"beze\",\n  \"roomId\": 2\n}"
+				},
+				"url": {
+					"raw": "{{url}}/booking",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"booking"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete-booking",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/booking?id",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"booking"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": null
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "update-booking",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"bookingDates\": {\r\n    \"checkIn\": {{checkInDate}},\r\n    \"checkOut\": {{checkOutDate}}\r\n  },\r\n  \"firstName\": \"nastya\",\r\n  \"lastName\": \"beze\",\r\n  \"roomId\": 2\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/booking",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"booking"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "url",
+			"value": "http://localhost:5000"
+		},
+		{
+			"key": "checkInDate",
+			"value": "20240308"
+		},
+		{
+			"key": "checkOutDate",
+			"value": "20240311"
+		}
+	]
+}
